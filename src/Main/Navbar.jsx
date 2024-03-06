@@ -14,12 +14,12 @@ import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { Link } from "react-router-dom";
 
-
 const Navbar = () => {
   const pages = [
     { page: "Dashboard", link: "/" },
     { page: "Products", link: "/product" },
     { page: "Inventory", link: "/inventory" },
+    { page: "PO", link: "/purchase-orders" },
   ];
 
   const settings = ["Profile", "Logout"];
@@ -43,7 +43,7 @@ const Navbar = () => {
   };
 
   return (
-    <AppBar className="w-full h-[10%]" position="sticky">
+    <AppBar className="w-full h-[10%] min-h-16" position="sticky">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
@@ -126,7 +126,7 @@ const Navbar = () => {
                 key={x}
                 sx={{ my: 2, color: "white", display: "block" }}
                 to={x.link}
-                className='text-[18px] px-2'
+                className="text-[18px] px-2"
               >
                 {x.page}
               </Link>

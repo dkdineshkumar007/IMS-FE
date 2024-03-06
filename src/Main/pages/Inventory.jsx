@@ -319,7 +319,7 @@ const Inventory = () => {
         style={{ top: 0, bottom: 0, left: 0, right: 0 }}
       >
         <Card
-          size="small"
+          // size="small"
           className="w-9/12 h-full relative"
           title="Inventory Stock"
           extra={
@@ -342,7 +342,7 @@ const Inventory = () => {
         >
           <div
             className="absolute ag-theme-quartz"
-            style={{ top: "40px", bottom: 0, left: 0, right: 0 }}
+            style={{ top: "57px", bottom: 0, left: 0, right: 0 }}
           >
             <AgGridReact
               columnDefs={columnDefs}
