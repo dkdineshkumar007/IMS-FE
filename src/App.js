@@ -7,7 +7,7 @@ import Po from "./Main/pages/PurchaseOrders";
 
 function App() {
   return (
-    <div className="App h-[100vh]">
+    <div className="App h-[100vh] relative">
       <Navbar />
       <Routes>
         <Route path="/" element={<Homepage />} />
