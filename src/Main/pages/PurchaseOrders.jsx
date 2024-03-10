@@ -105,11 +105,7 @@ const PurchaseOrders = () => {
         field: "primaryImageUrl",
         headerName: "Image",
         headerTooltip: "Image",
-
         width: 100,
-        // cellRenderer: ({ value }) => {
-        //   return <img alt="" style={{ width: 30, height: 30 }} src={value} />;
-        // },
       },
 
       {
@@ -124,23 +120,11 @@ const PurchaseOrders = () => {
         headerTooltip: "Article No",
         flex: 1,
       },
-      // { field: "size", headerName: "Size", headerTooltip: "Size", flex: 1 },
-      // { field: "color", headerName: "Color", headerTooltip: "Color", flex: 1 },
       {
         field: "available",
         headerName: "Stock Quantity",
         headerTooltip: "Stock Quantity",
         flex: 1,
-        // cellRenderer: ({ data }) => {
-        //   const { stockDetails = [] } = data || {};
-        //   let totalStockQuantity = 0;
-        //   if (stockDetails?.length) {
-        //     stockDetails.forEach((item) => {
-        //       totalStockQuantity += item.stockQuantity;
-        //     });
-        //   }
-        //   return totalStockQuantity;
-        // },
       },
     ],
     []
@@ -409,6 +393,7 @@ const PurchaseOrders = () => {
                     // className="py-4"
                     // value={selectedProduct}
                     options={productOptions}
+                    value={selectedProduct}
                     onChange={(e, value) => {
                       console.log({ value }, "kkkk");
                       setSelectedProduct(value);
@@ -475,6 +460,7 @@ const PurchaseOrders = () => {
                     variant="outlined"
                     size="small"
                     disabled
+                    value={selectedProduct?.code || " "}
                   />
                   <TextField
                     // fullWidth
@@ -483,7 +469,9 @@ const PurchaseOrders = () => {
                     label="Supplier Cost"
                     variant="outlined"
                     size="small"
+                    type="number"
                     disabled
+                    value={selectedProduct?.supplierCost || 0}
                   />
                 </div>
               </div>
