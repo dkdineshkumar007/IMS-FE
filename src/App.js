@@ -4,6 +4,7 @@ import Homepage from "./Main/pages/Homepage";
 import Products from "./Main/pages/Products";
 import Inventory from "./Main/pages/Inventory";
 import Po from "./Main/pages/PurchaseOrders";
+import Orders from "./Main/pages/Orders";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/product" element={<Products />} />
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/purchase-orders" element={<Po />} />
+        <Route path="/online-orders" element={<Orders />} />
       </Routes>
     </div>
   );

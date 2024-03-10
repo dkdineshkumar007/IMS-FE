@@ -20,6 +20,7 @@ const Navbar = () => {
     { page: "Products", link: "/product" },
     { page: "Inventory", link: "/inventory" },
     { page: "PO", link: "/purchase-orders" },
+    { page: "Orders", link: "/online-orders" },
   ];
 
   const settings = ["Profile", "Logout"];
