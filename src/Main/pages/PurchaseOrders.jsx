@@ -11,29 +11,31 @@ import {
   IconButton,
 } from "@mui/material";
 import dayjs from "dayjs";
-import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { MobileDatePicker } from "@mui/x-date-pickers/MobileDatePicker";
-import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
-import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
-
 import axios from "axios";
 import { debounce } from "lodash";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import { DatePicker as AntDatePicker, Card, Tooltip } from "antd";
+import { Card, Tooltip } from "antd";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { ToastContainer, toast } from "react-toastify";
+
 const nodeAPIUrl = `http://localhost:5000/api/v1`;
 let cancelToken;
 
 const PurchaseOrders = () => {
-  const currentDate = dayjs(new Date());
+  const [addItemsGridApi, setAddItemsGridApi] = useState(null);
   const [poFormDetails, setPoFormDetails] = useState({
     poNumber: "",
     supplier: null,
     poStatus: "pending",
     paymentStatus: "not paid",
-    warehouse: "warehouse a",
+    warehouse: {
+      _id: "65d9bdc91eaa28062d230c28",
+      warehouseName: "Warehouse-A",
+      isActive: true,
+    },
     shipByDate: null,
     note: "",
   });
@@ -41,7 +43,12 @@ const PurchaseOrders = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [lineItems, setLineItems] = useState([]);
 
+  const [supplierOptions, setSupplierOptions] = useState([]);
+  const [warehouseOptions, setWarehouseOptions] = useState([]);
+
   const [quantity, setQuantity] = useState(1);
+
+  const [poList, setPoList] = useState([]);
 
   const paymentStatus = [
     {
@@ -79,51 +86,31 @@ const PurchaseOrders = () => {
       label: "Pending",
     },
   ];
-  const warehouses = [
-    {
-      value: "warehouse a",
-      label: "Warehouse A",
-    },
-    {
-      value: "warehouse b",
-      label: "Warehouse B",
-    },
-    {
-      value: "warehouse c",
-      label: "Warehouse C",
-    },
-  ];
+
   const columnDefs = useMemo(
     () => [
       {
-        field: "sku",
-        headerName: "SKU",
-        headerTooltip: "SKU",
+        field: "poNumber",
+
         cellRenderer: "agGroupCellRenderer",
       },
       {
-        field: "primaryImageUrl",
-        headerName: "Image",
-        headerTooltip: "Image",
+        field: "poStatus",
+
+        width: 150,
+      },
+      {
+        field: "paymentStatus",
         width: 100,
       },
 
       {
-        field: "title",
-        headerName: "Title",
-        headerTooltip: "Title",
-        width: 350,
+        field: "shipByDate",
+
+        width: 100,
       },
       {
-        field: "code",
-        headerName: "Article No",
-        headerTooltip: "Article No",
-        flex: 1,
-      },
-      {
-        field: "available",
-        headerName: "Stock Quantity",
-        headerTooltip: "Stock Quantity",
+        field: "warehouseName",
         flex: 1,
       },
     ],
@@ -137,37 +124,61 @@ const PurchaseOrders = () => {
         headerName: "SKU",
         headerTooltip: "SKU",
         cellRenderer: "agGroupCellRenderer",
+        width: 200,
       },
       {
         field: "primaryImageUrl",
         headerName: "Image",
         headerTooltip: "Image",
-        // width: 100,
+        width: 100,
+        cellRenderer: ({ value }) => {
+          return <img alt="" style={{ width: 30, height: 30 }} src={value} />;
+        },
       },
       {
         field: "code",
         headerName: "Code",
         headerTooltip: "Article No",
-        // flex: 1,
+        width: 200,
       },
       {
         field: "orderQty",
         headerName: "Order Qty",
         headerTooltip: "Stock Quantity",
-        // flex: 1,
+        width: 150,
       },
       {
         field: "Item Cost",
         headerName: "Supplier Cost",
         headerTooltip: "Item Cost",
-        // flex: 1,
+        width: 150,
+      },
+      {
+        headerName: "Action",
+        width: 100,
+
+        cellRenderer: (params) => {
+          const { _id = "" } = params?.data || {};
+          console.log(_id);
+          return (
+            // <div className="flex items-center gap-2">
+            // <button onClick={() => editMode(_id)}>
+            //   <EditIcon sx={{ color: "#2e7d32" }} className="cursor-pointer" />
+            // </button>
+            <button
+              onClick={() => {
+                removeLineItem(_id);
+              }}
+            >
+              <DeleteIcon sx={{ color: "red" }} className="cursor-pointer" />
+            </button>
+            // </div>
+          );
+        },
       },
     ],
     []
   );
-  const onChange = (e) => {
-    console.log(e);
-  };
 
   const ImageRenderer = (props) => {
     const {
@@ -214,9 +225,170 @@ const PurchaseOrders = () => {
     }
   }, 300);
 
-  const handleChange = (e) => {
-    setQuantity(e?.target?.value);
+  const getSupplierDetails = async () => {
+    await axios
+      .get(`${nodeAPIUrl}/supplier/get-all`)
+      .then((response) => response.data)
+      .then((result) => {
+        if (result?.data && result?.data?.length) {
+          setSupplierOptions(result?.data);
+        } else {
+          setSupplierOptions([]);
+        }
+      })
+      .catch((error) => {
+        setSupplierOptions([]);
+        console.error("Error fetching data:", error);
+      });
   };
+
+  const getWarehouseDetails = async () => {
+    await axios
+      .get(`${nodeAPIUrl}/warehouse/get-all`)
+      .then((response) => response.data)
+      .then((result) => {
+        if (result?.data && result?.data?.length) {
+          setWarehouseOptions(result?.data);
+        } else {
+          setWarehouseOptions([]);
+        }
+      })
+      .catch((error) => {
+        setWarehouseOptions([]);
+        console.error("Error fetching data:", error);
+      });
+  };
+  const getPoList = async () => {
+    await axios
+      .get(`${nodeAPIUrl}/purchase-order/get`)
+      .then((response) => response.data)
+      .then((result) => {
+        if (result?.data && result?.data?.length) {
+          setPoList(result?.data);
+        } else {
+          setPoList([]);
+        }
+      })
+      .catch((error) => {
+        setPoList([]);
+        console.error("Error fetching data:", error);
+      });
+  };
+
+  const createPoWithLineItems = () => {
+    const Items = addItemsGridApi.getRenderedNodes()?.map((node) => node?.data);
+    console.log(Items);
+    const data = {
+      ...poFormDetails,
+      lineItems: Items,
+    };
+    // setLoading(true);
+    axios
+      .post(`${nodeAPIUrl}/purchase-order/create`, data)
+      .then((response) => response.data)
+      .then((result) => {
+        if (result?.data) {
+          toast.success("Success");
+          console.log("Success");
+        } else {
+          // setLoading(false);
+          console.error("Failed ");
+          toast.error("Failed ");
+        }
+      })
+      .catch((error) => {
+        // setLoading(false);
+        toast.error("Failed");
+        console.error(error);
+      });
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target || {};
+    console.log(event.target);
+    console.log(name, value);
+
+    setPoFormDetails((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+  const onGridReady = (params) => {
+    setAddItemsGridApi(params.api);
+  };
+  const getRowId = useMemo(() => {
+    return (params) => {
+      return params?.data?._id;
+    };
+  }, [addItemsGridApi]);
+
+  const appendProduct = () => {
+    const insertData = {
+      ...selectedProduct,
+      orderQty: quantity,
+    };
+    addItemsGridApi.applyTransaction({
+      add: [insertData],
+      addIndex: 0,
+    });
+    setSelectedProduct(null);
+  };
+
+  const removeLineItem = (_id) => {
+    const rowNode = addItemsGridApi.getRowNode(_id);
+    const { data = {} } = rowNode || {};
+    addItemsGridApi.applyTransaction({ remove: [data] });
+  };
+  const detailCellRendererParams = () => {
+    // console.log(params, "hhhhhh");
+    return {
+      detailGridOptions: {
+        // autoGroupColumnDef: {
+        //   headerName: "Warehouse",
+        // },
+        columnDefs: [
+          {
+            field: "primaryImageUrl",
+            headerName: "Image",
+            headerTooltip: "Image",
+            width: 100,
+            cellStyle: (params) => {
+              //mark police cells as red
+              return {
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              };
+            },
+            cellRenderer: ({ value }) => {
+              return (
+                <img alt="" style={{ width: 30, height: 30 }} src={value} />
+              );
+            },
+          },
+          { field: "sku", flex: 1 },
+          { field: "code", flex: 1 },
+          { field: "orderedQty", flex: 1 },
+        ],
+        // autoSizeStrategy: {
+        //   type: "fitCellContents",
+        // },
+        // defaultColDef: {
+        //   flex: 1,
+        // },
+      },
+      getDetailRowData: (params) => {
+        // console.log({ params });
+        params.successCallback(params?.data?.poItems);
+      },
+    };
+  };
+
+  useEffect(() => {
+    getSupplierDetails();
+    getWarehouseDetails();
+    getPoList();
+  }, []);
 
   return (
     <Card className="w-full h-[90%] relative">
@@ -232,7 +404,7 @@ const PurchaseOrders = () => {
             <div className="flex items-center gap-4">
               <TextField size="small" label="Search" variant="outlined" />
               <Tooltip title="Refresh" placement="bottom">
-                <IconButton size="medium" color="secondary">
+                <IconButton onClick={getPoList} size="medium" color="secondary">
                   <RefreshIcon />
                 </IconButton>
               </Tooltip>
@@ -243,7 +415,12 @@ const PurchaseOrders = () => {
             className="absolute ag-theme-quartz p-1"
             style={{ top: "57px", bottom: 0, left: 0, right: 0 }}
           >
-            <AgGridReact columnDefs={columnDefs} rowData={[]} />
+            <AgGridReact
+              columnDefs={columnDefs}
+              masterDetail={true}
+              rowData={poList}
+              detailCellRendererParams={detailCellRendererParams}
+            />
           </div>
         </Card>
         <Card
@@ -271,18 +448,25 @@ const PurchaseOrders = () => {
                     variant="outlined"
                     size="small"
                     name="poNumber"
-                    onChange={onChange}
+                    onChange={handleChange}
                     value={poFormDetails?.poNumber}
                   />
                   <Autocomplete
                     disablePortal
                     id="combo-box-demo"
                     size="small"
-                    options={[]}
+                    options={supplierOptions}
+                    getOptionLabel={(option) => option?.supplierName}
                     sx={{ width: "100%" }}
                     name="supplier"
-                    value={poFormDetails?.supplier}
-                    onChange={onChange}
+                    // value={poFormDetails?.supplier}
+                    onChange={(e, value) => {
+                      // console.log({ value }, "kkkk");
+                      setPoFormDetails((prev) => ({
+                        ...prev,
+                        supplier: value,
+                      }));
+                    }}
                     renderInput={(params) => (
                       <TextField {...params} label="Suppier" />
                     )}
@@ -294,7 +478,7 @@ const PurchaseOrders = () => {
                     size="small"
                     label="PO Status"
                     value={poFormDetails?.poStatus}
-                    onChange={onChange}
+                    onChange={handleChange}
                     defaultValue="pending"
                     name="poStatus"
                   >
@@ -313,7 +497,7 @@ const PurchaseOrders = () => {
                     label="Payment Status"
                     defaultValue="not paid"
                     name="paymentStatus"
-                    onChange={onChange}
+                    onChange={handleChange}
                     value={poFormDetails?.paymentStatus}
                     // helperText="Please select your currency"
                   >
@@ -334,18 +518,17 @@ const PurchaseOrders = () => {
                   <TextField
                     id="outlined-select-currency"
                     select
-                    // className="pb-4"
                     sx={{ width: "100%" }}
                     size="small"
                     label="Ship To Warehouse"
-                    onChange={onChange}
+                    onChange={handleChange}
                     defaultValue="warehouse a"
                     name="warehouse"
                     value={poFormDetails?.warehouse}
                   >
-                    {warehouses.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
+                    {warehouseOptions.map((option) => (
+                      <MenuItem key={option._id} value={option}>
+                        {option?.warehouseName}
                       </MenuItem>
                     ))}
                   </TextField>
@@ -354,7 +537,15 @@ const PurchaseOrders = () => {
                       defaultValue={dayjs(new Date().toLocaleDateString())}
                       slotProps={{ textField: { size: "small" } }}
                       name="shipByDate"
-                      onChange={onChange}
+                      onChange={(e) => {
+                        const data = {
+                          target: {
+                            name: "shipByDate",
+                            value: e ? e.$d : null,
+                          },
+                        };
+                        handleChange(data);
+                      }}
                       value={
                         poFormDetails?.shipByDate
                           ? dayjs(
@@ -373,7 +564,7 @@ const PurchaseOrders = () => {
                       multiline
                       rows={3}
                       name="note"
-                      onChange={onChange}
+                      onChange={handleChange}
                       value={poFormDetails?.note}
                     />
                   </div>
@@ -446,7 +637,10 @@ const PurchaseOrders = () => {
                     sx={{ width: "50%" }}
                     size="small"
                     value={quantity}
-                    onChange={handleChange}
+                    onChange={(e) => {
+                      const { value } = e.target || {};
+                      setQuantity(value);
+                    }}
                     InputLabelProps={{
                       shrink: true,
                     }}
@@ -479,7 +673,7 @@ const PurchaseOrders = () => {
               <div className="flex items-center justify-start">
                 <Button
                   className=""
-                  // color="success"
+                  onClick={appendProduct}
                   size="small"
                   variant="outlined"
                 >
@@ -489,12 +683,12 @@ const PurchaseOrders = () => {
               <div></div>
               <div className="h-64 ag-theme-quartz p-1">
                 <AgGridReact
+                  ref={addItemsGridApi}
                   containerStyle={{ height: 240 }}
                   columnDefs={addItemColumnDefs}
-                  rowData={[]}
-                  defaultColDef={{
-                    flex: 1,
-                  }}
+                  rowData={lineItems}
+                  getRowId={getRowId}
+                  onGridReady={onGridReady}
                 />
               </div>
             </div>
@@ -512,6 +706,7 @@ const PurchaseOrders = () => {
                 size="small"
                 color="success"
                 variant="contained"
+                onClick={createPoWithLineItems}
               >
                 Save
               </Button>
@@ -527,6 +722,7 @@ const PurchaseOrders = () => {
           </div>
         </Card>
       </div>
+      <ToastContainer />
     </Card>
   );
 };
