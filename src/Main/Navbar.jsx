@@ -17,10 +17,10 @@ import { Link } from "react-router-dom";
 const Navbar = () => {
   const pages = [
     { page: "Dashboard", link: "/" },
-    { page: "Products", link: "/product" },
+    { page: "Orders", link: "/online-orders" },
     { page: "Inventory", link: "/inventory" },
     { page: "PO", link: "/purchase-orders" },
-    { page: "Orders", link: "/online-orders" },
+    { page: "Products", link: "/product" },
   ];
 
   const settings = ["Profile", "Logout"];

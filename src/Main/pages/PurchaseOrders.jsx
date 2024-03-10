@@ -258,6 +258,7 @@ const PurchaseOrders = () => {
         console.error("Error fetching data:", error);
       });
   };
+
   const getPoList = async () => {
     await axios
       .get(`${nodeAPIUrl}/purchase-order/get`)

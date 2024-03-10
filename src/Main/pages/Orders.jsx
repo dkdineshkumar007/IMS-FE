@@ -12,62 +12,39 @@ import { debounce } from "lodash";
 import Button from "@mui/material/Button";
 import RefreshIcon from "@mui/icons-material/Refresh";
 
+const nodeAPIUrl = `http://localhost:5000/api/v1`;
+
 const Orders = () => {
+  const [rowData, setRowData] = useState([]);
   const colDefs = [
     {
-      field: "primaryImageUrl",
-      headerName: "Image",
-      headerTooltip: "Image",
-      width: 100,
-      cellRenderer: ({ value }) => {
-        return <img alt="" style={{ width: 30, height: 30 }} src={value} />;
-      },
+      field: "orderNumber",
+      width: 200,
+      cellRenderer: "agGroupCellRenderer",
     },
     {
-      field: "sku",
-      headerName: "SKU",
-      headerTooltip: "SKU",
-    },
-    { field: "title", headerName: "Title", headerTooltip: "Title", width: 350 },
-    {
-      field: "code",
-      headerName: "Article No",
-      headerTooltip: "Article No",
-      flex: 1,
-    },
-    { field: "size", headerName: "Size", headerTooltip: "Size", flex: 1 },
-    { field: "color", headerName: "Color", headerTooltip: "Color", flex: 1 },
-    {
-      field: "available",
-      headerName: "Stock Quantity",
-      headerTooltip: "Stock Quantity",
-      flex: 1,
-      cellRenderer: (params) => {
-        const { available = 0 } = params?.data || {};
-        return available || 0;
-      },
+      field: "paymentStatus",
+      width: 200,
     },
     {
-      headerName: "Action",
-      width: 100,
-
-      //   cellRenderer: (params) => {
-      //     const { _id = "" } = params?.data || {};
-      //     return (
-      //       <div className="flex items-center gap-2">
-      //         <button onClick={() => editMode(_id)}>
-      //           <EditIcon sx={{ color: "#2e7d32" }} className="cursor-pointer" />
-      //         </button>
-      //         <button
-      //           onClick={() => {
-      //             deleteMode(_id);
-      //           }}
-      //         >
-      //           <DeleteIcon sx={{ color: "red" }} className="cursor-pointer" />
-      //         </button>
-      //       </div>
-      //     );
-      //   },
+      field: "localStatus",
+      width: 200,
+    },
+    { field: "onlineStatus", width: 200 },
+    {
+      field: "orderedOn",
+      width: 200,
+    },
+    { field: "shipByDate", width: 200 },
+    {
+      field: "orderTotal",
+      //   headerName: "Action",
+      width: 200,
+    },
+    {
+      field: "Notes",
+      //   headerName: "Action",
+      width: 200,
     },
   ];
   const [defaultColDef] = useState({
@@ -76,6 +53,73 @@ const Orders = () => {
     filter: false,
     selectable: false,
   });
+
+  const detailCellRendererParams = () => {
+    // console.log(params, "hhhhhh");
+    return {
+      detailGridOptions: {
+        // autoGroupColumnDef: {
+        //   headerName: "Warehouse",
+        // },
+        columnDefs: [
+          //   {
+          //     field: "primaryImageUrl",
+          //     headerName: "Image",
+          //     headerTooltip: "Image",
+          //     width: 100,
+          //     cellStyle: (params) => {
+          //       //mark police cells as red
+          //       return {
+          //         display: "flex",
+          //         justifyContent: "center",
+          //         alignItems: "center",
+          //       };
+          //     },
+          //     cellRenderer: ({ value }) => {
+          //       return (
+          //         <img alt="" style={{ width: 30, height: 30 }} src={value} />
+          //       );
+          //     },
+          //   },
+          { field: "sku", flex: 1 },
+          { field: "qty", flex: 1 },
+          //   { field: "orderedQty", flex: 1 },
+        ],
+        // autoSizeStrategy: {
+        //   type: "fitCellContents",
+        // },
+        // defaultColDef: {
+        //   flex: 1,
+        // },
+      },
+      getDetailRowData: (params) => {
+        // console.log({ params });
+        params.successCallback(params?.data?.products);
+      },
+    };
+  };
+
+  const getOrders = async () => {
+    await axios
+      .get(`${nodeAPIUrl}/orders/get-all`)
+      .then((response) => response.data)
+      .then((result) => {
+        if (result?.data && result?.data?.length) {
+          setRowData(result?.data);
+        } else {
+          setRowData([]);
+        }
+      })
+      .catch((error) => {
+        setRowData([]);
+        console.error("Error fetching data:", error);
+      });
+  };
+
+  useEffect(() => {
+    getOrders();
+  }, []);
+
   return (
     <Card className="w-full h-[90%] relative">
       <div
@@ -85,10 +129,12 @@ const Orders = () => {
         <div className="ag-theme-quartz h-full p-4">
           <AgGridReact
             // ref={gridApi}
-            rowData={[]}
+            rowData={rowData}
             rowSelection="single"
             defaultColDef={defaultColDef}
             columnDefs={colDefs}
+            masterDetail={true}
+            detailCellRendererParams={detailCellRendererParams}
             // onGridReady={onGridReady}
             // getRowId={getRowId}
             // pagination={true}
