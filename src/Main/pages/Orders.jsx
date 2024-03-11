@@ -16,6 +16,7 @@ const nodeAPIUrl = `http://localhost:5000/api/v1`;
 
 const Orders = () => {
   const [rowData, setRowData] = useState([]);
+  const [gridApi, setGridApi] = useState(null);
   const colDefs = [
     {
       field: "orderNumber",
@@ -55,49 +56,74 @@ const Orders = () => {
   });
 
   const detailCellRendererParams = () => {
-    // console.log(params, "hhhhhh");
     return {
       detailGridOptions: {
-        // autoGroupColumnDef: {
-        //   headerName: "Warehouse",
-        // },
         columnDefs: [
-          //   {
-          //     field: "primaryImageUrl",
-          //     headerName: "Image",
-          //     headerTooltip: "Image",
-          //     width: 100,
-          //     cellStyle: (params) => {
-          //       //mark police cells as red
-          //       return {
-          //         display: "flex",
-          //         justifyContent: "center",
-          //         alignItems: "center",
-          //       };
-          //     },
-          //     cellRenderer: ({ value }) => {
-          //       return (
-          //         <img alt="" style={{ width: 30, height: 30 }} src={value} />
-          //       );
-          //     },
-          //   },
           { field: "sku", flex: 1 },
           { field: "qty", flex: 1 },
-          //   { field: "orderedQty", flex: 1 },
         ],
-        // autoSizeStrategy: {
-        //   type: "fitCellContents",
-        // },
-        // defaultColDef: {
-        //   flex: 1,
-        // },
       },
       getDetailRowData: (params) => {
-        // console.log({ params });
         params.successCallback(params?.data?.products);
       },
     };
   };
+
+  const getContextMenuItems = (params) => {
+    console.log({ params });
+    const { orderNumber = "", _id = "" } = params?.node?.data || {};
+    const result = [
+      "cut",
+      "copy",
+      "paste",
+      "copyWithHeaders",
+      "export",
+      // "separator",
+    ];
+    const localStatus = {
+      name: "Local Status",
+      subMenu: [
+        {
+          name: "PENDING",
+          action: () => {
+            updateStatus(_id, orderNumber, "PENDING");
+          },
+        },
+        {
+          name: "READY TO PICK",
+          action: () => {
+            updateStatus(_id, orderNumber, "READY TO PICK");
+          },
+        },
+        {
+          name: "READY TO PACK",
+          action: () => {
+            updateStatus(_id, orderNumber, "READY TO PACK");
+          },
+        },
+        {
+          name: "READY TO SHIP",
+          action: () => {
+            updateStatus(_id, orderNumber, "READY TO SHIP");
+          },
+        },
+        {
+          name: "SHIPPED",
+          action: () => {
+            updateStatus(_id, orderNumber, "SHIPPED");
+          },
+        },
+      ],
+    };
+    result.unshift(localStatus, "separator");
+    return result;
+  };
+
+  const getRowId = useMemo(() => {
+    return (params) => {
+      return params?.data?._id;
+    };
+  }, []);
 
   const getOrders = async () => {
     await axios
@@ -116,32 +142,58 @@ const Orders = () => {
       });
   };
 
+  const updateStatus = (orderId, orderNumber, status) => {
+    console.log(orderNumber, status);
+    const data = {
+      orderNumber,
+      status,
+    };
+    axios
+      .put(`${nodeAPIUrl}/orders/change-status/${orderId}`, data)
+      .then((response) => response.data)
+      .then((result) => {
+        if (result?.data) {
+          console.log(result?.data, "dadaddadaad");
+          const { _id = "" } = result?.data || {};
+          const rowNode = gridApi.getRowNode(_id);
+          rowNode.updateData(result?.data);
+          gridApi.flashCells({ rowNodes: [rowNode] });
+          console.log("success");
+        } else {
+          console.log("error");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const onGridReady = (params) => {
+    setGridApi(params.api);
+  };
+
   useEffect(() => {
     getOrders();
   }, []);
 
   return (
-    <Card className="w-full h-[90%] relative">
+    <Card title="Orders" className="w-full h-[90%] relative p-2">
       <div
-        className="absolute"
-        style={{ top: 0, bottom: 0, left: 0, right: 0 }}
+        style={{ top: "57px", bottom: 0, left: 0, right: 0 }}
+        className="ag-theme-quartz absolute p-4"
       >
-        <div className="ag-theme-quartz h-full p-4">
-          <AgGridReact
-            // ref={gridApi}
-            rowData={rowData}
-            rowSelection="single"
-            defaultColDef={defaultColDef}
-            columnDefs={colDefs}
-            masterDetail={true}
-            detailCellRendererParams={detailCellRendererParams}
-            // onGridReady={onGridReady}
-            // getRowId={getRowId}
-            // pagination={true}
-            // paginationPageSize={100}
-            // paginationPageSizeSelector={false}
-          />
-        </div>
+        <AgGridReact
+          ref={gridApi}
+          rowData={rowData}
+          onGridReady={onGridReady}
+          rowSelection="single"
+          defaultColDef={defaultColDef}
+          columnDefs={colDefs}
+          masterDetail={true}
+          detailCellRendererParams={detailCellRendererParams}
+          getContextMenuItems={getContextMenuItems}
+          getRowId={getRowId}
+        />
       </div>
     </Card>
   );
