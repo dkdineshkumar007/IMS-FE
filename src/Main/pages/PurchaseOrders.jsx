@@ -151,11 +151,10 @@ const PurchaseOrders = () => {
         headerName: "Action",
         width: 100,
         cellRenderer: (params) => {
-          const { _id = "" } = params?.data || {};
           return (
             <button
               onClick={() => {
-                removeLineItem(_id);
+                removeLineItem(params);
               }}
             >
               <DeleteIcon sx={{ color: "red" }} className="cursor-pointer" />
@@ -348,12 +347,7 @@ const PurchaseOrders = () => {
   };
   const getRowId = useMemo(() => {
     return (params) => {
-      return params?.data?._id;
-    };
-  }, []);
-
-  const getMainGridRowId = useMemo(() => {
-    return (params) => {
+      console.log(params, "gagagaag");
       return params?.data?._id;
     };
   }, []);
@@ -370,10 +364,9 @@ const PurchaseOrders = () => {
     setSelectedProduct(null);
   };
 
-  const removeLineItem = (_id) => {
-    const rowNode = addItemsGridApi.getRowNode(_id);
-    const { data = {} } = rowNode || {};
-    addItemsGridApi.applyTransaction({ remove: [data] });
+  const removeLineItem = (params) => {
+    const { data, api } = params || {};
+    api.applyTransaction({ remove: [data] });
   };
   const detailCellRendererParams = useMemo(() => {
     return {
@@ -494,6 +487,7 @@ const PurchaseOrders = () => {
               masterDetail={true}
               rowData={poList}
               rowSelection="single"
+              // getRowId={getMainGridRowId}
               detailCellRendererParams={detailCellRendererParams}
               onSelectionChanged={handleSelectionChange}
               onGridReady={onMainGridReady}
