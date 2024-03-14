@@ -15,7 +15,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { MobileDatePicker } from "@mui/x-date-pickers/MobileDatePicker";
 import axios from "axios";
-import { debounce } from "lodash";
+import { debounce, update } from "lodash";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { Card, Tooltip } from "antd";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -117,7 +117,7 @@ const PurchaseOrders = () => {
         field: "sku",
         headerName: "SKU",
         headerTooltip: "SKU",
-        cellRenderer: "agGroupCellRenderer",
+        // cellRenderer: "agGroupCellRenderer",
         width: 200,
       },
       {
@@ -297,6 +297,39 @@ const PurchaseOrders = () => {
       });
   };
 
+  const updatePoWithLineItems = () => {
+    const Items = addItemsGridApi.getRenderedNodes()?.map((node) => node?.data);
+    console.log(Items);
+    const data = {
+      ...poFormDetails,
+      lineItems: Items,
+    };
+    axios
+      .post(`${nodeAPIUrl}/purchase-order/update`, data)
+      .then((response) => response.data)
+      .then((result) => {
+        if (result?.data) {
+          toast.success("Success");
+          console.log("Success");
+        } else {
+          console.error("Failed ");
+          toast.error("Failed ");
+        }
+      })
+      .catch((error) => {
+        toast.error("Failed");
+        console.error(error);
+      });
+  };
+
+  const handleSave = () => {
+    if (mode === "create") {
+      createPoWithLineItems();
+    } else {
+      updatePoWithLineItems();
+    }
+  };
+
   const handleChange = (event) => {
     const { name, value } = event.target || {};
     console.log(event.target);
@@ -342,7 +375,7 @@ const PurchaseOrders = () => {
     const { data = {} } = rowNode || {};
     addItemsGridApi.applyTransaction({ remove: [data] });
   };
-  const detailCellRendererParams = () => {
+  const detailCellRendererParams = useMemo(() => {
     return {
       detailGridOptions: {
         columnDefs: [
@@ -373,7 +406,7 @@ const PurchaseOrders = () => {
         params.successCallback(params?.data?.poItems);
       },
     };
-  };
+  }, []);
 
   const handleSelectionChange = () => {
     if (mainGridApi?.getSelectedNodes) {
@@ -746,9 +779,9 @@ const PurchaseOrders = () => {
                 size="small"
                 color="success"
                 variant="contained"
-                onClick={createPoWithLineItems}
+                onClick={handleSave}
               >
-                Save
+                {mode === "create" ? "SAVE" : "UPDATE"}
               </Button>
               <Button
                 className=""
