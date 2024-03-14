@@ -60,7 +60,7 @@ const Navbar = () => {
   };
 
   return (
-    <AppBar className="w-full h-[10%] min-h-16" position="sticky">
+    <AppBar className="w-full h-[10%] min-h-16 max-h-16" position="sticky">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
