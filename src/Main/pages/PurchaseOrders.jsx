@@ -24,31 +24,29 @@ import { ToastContainer, toast } from "react-toastify";
 const nodeAPIUrl = `http://localhost:5000/api/v1`;
 let cancelToken;
 
+const initialState = {
+  poNumber: "",
+  supplier: null,
+  poStatus: "pending",
+  paymentStatus: "not paid",
+  warehouse: "",
+  shipByDate: null,
+  note: "",
+};
+
 const PurchaseOrders = () => {
+  const [mainGridApi, setMainGridApi] = useState(null);
   const [addItemsGridApi, setAddItemsGridApi] = useState(null);
-  const [poFormDetails, setPoFormDetails] = useState({
-    poNumber: "",
-    supplier: null,
-    poStatus: "pending",
-    paymentStatus: "not paid",
-    warehouse: {
-      _id: "65d9bdc91eaa28062d230c28",
-      warehouseName: "Warehouse-A",
-      isActive: true,
-    },
-    shipByDate: null,
-    note: "",
-  });
+  const [poFormDetails, setPoFormDetails] = useState(initialState);
   const [productOptions, setProductOptions] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [lineItems, setLineItems] = useState([]);
-
   const [supplierOptions, setSupplierOptions] = useState([]);
   const [warehouseOptions, setWarehouseOptions] = useState([]);
-
   const [quantity, setQuantity] = useState(1);
-
   const [poList, setPoList] = useState([]);
+  const [mode, setMode] = useState("create");
+  const [selectedPO, setSelectedPO] = useState(null);
 
   const paymentStatus = [
     {
@@ -91,22 +89,18 @@ const PurchaseOrders = () => {
     () => [
       {
         field: "poNumber",
-
         cellRenderer: "agGroupCellRenderer",
       },
       {
         field: "poStatus",
-
         width: 150,
       },
       {
         field: "paymentStatus",
         width: 100,
       },
-
       {
         field: "shipByDate",
-
         width: 100,
       },
       {
@@ -156,15 +150,9 @@ const PurchaseOrders = () => {
       {
         headerName: "Action",
         width: 100,
-
         cellRenderer: (params) => {
           const { _id = "" } = params?.data || {};
-          console.log(_id);
           return (
-            // <div className="flex items-center gap-2">
-            // <button onClick={() => editMode(_id)}>
-            //   <EditIcon sx={{ color: "#2e7d32" }} className="cursor-pointer" />
-            // </button>
             <button
               onClick={() => {
                 removeLineItem(_id);
@@ -172,7 +160,6 @@ const PurchaseOrders = () => {
             >
               <DeleteIcon sx={{ color: "red" }} className="cursor-pointer" />
             </button>
-            // </div>
           );
         },
       },
@@ -242,6 +229,13 @@ const PurchaseOrders = () => {
       });
   };
 
+  const setCreateMode = () => {
+    setPoFormDetails(initialState);
+    setLineItems([]);
+    setMode("create");
+    setSelectedPO(null);
+  };
+
   const getWarehouseDetails = async () => {
     await axios
       .get(`${nodeAPIUrl}/warehouse/get-all`)
@@ -260,6 +254,8 @@ const PurchaseOrders = () => {
   };
 
   const getPoList = async () => {
+    setCreateMode();
+    setPoList([]);
     await axios
       .get(`${nodeAPIUrl}/purchase-order/get`)
       .then((response) => response.data)
@@ -283,7 +279,6 @@ const PurchaseOrders = () => {
       ...poFormDetails,
       lineItems: Items,
     };
-    // setLoading(true);
     axios
       .post(`${nodeAPIUrl}/purchase-order/create`, data)
       .then((response) => response.data)
@@ -292,13 +287,11 @@ const PurchaseOrders = () => {
           toast.success("Success");
           console.log("Success");
         } else {
-          // setLoading(false);
           console.error("Failed ");
           toast.error("Failed ");
         }
       })
       .catch((error) => {
-        // setLoading(false);
         toast.error("Failed");
         console.error(error);
       });
@@ -317,11 +310,20 @@ const PurchaseOrders = () => {
   const onGridReady = (params) => {
     setAddItemsGridApi(params.api);
   };
+  const onMainGridReady = (params) => {
+    setMainGridApi(params.api);
+  };
   const getRowId = useMemo(() => {
     return (params) => {
       return params?.data?._id;
     };
-  }, [addItemsGridApi]);
+  }, []);
+
+  const getMainGridRowId = useMemo(() => {
+    return (params) => {
+      return params?.data?._id;
+    };
+  }, []);
 
   const appendProduct = () => {
     const insertData = {
@@ -341,20 +343,15 @@ const PurchaseOrders = () => {
     addItemsGridApi.applyTransaction({ remove: [data] });
   };
   const detailCellRendererParams = () => {
-    // console.log(params, "hhhhhh");
     return {
       detailGridOptions: {
-        // autoGroupColumnDef: {
-        //   headerName: "Warehouse",
-        // },
         columnDefs: [
           {
             field: "primaryImageUrl",
             headerName: "Image",
             headerTooltip: "Image",
             width: 100,
-            cellStyle: (params) => {
-              //mark police cells as red
+            cellStyle: () => {
               return {
                 display: "flex",
                 justifyContent: "center",
@@ -371,19 +368,62 @@ const PurchaseOrders = () => {
           { field: "code", flex: 1 },
           { field: "orderedQty", flex: 1 },
         ],
-        // autoSizeStrategy: {
-        //   type: "fitCellContents",
-        // },
-        // defaultColDef: {
-        //   flex: 1,
-        // },
       },
       getDetailRowData: (params) => {
-        // console.log({ params });
         params.successCallback(params?.data?.poItems);
       },
     };
   };
+
+  const handleSelectionChange = () => {
+    if (mainGridApi?.getSelectedNodes) {
+      const nodes = mainGridApi.getSelectedNodes();
+      const po = nodes?.[0]?.data || null;
+      setSelectedPO(po);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedPO?.poNumber) {
+      const {
+        poNumber = "",
+        supplierId = "",
+        poStatus = "",
+        paymentStatus = "",
+        shipToWarehouse = "",
+        shipByDate = "",
+        note = "",
+        poItems = [],
+      } = selectedPO || {};
+      let warehouse;
+      let supplier;
+      const warehouseIdx = warehouseOptions.findIndex(
+        (x) => x?._id === shipToWarehouse
+      );
+      const supplierIdx = supplierOptions.findIndex(
+        (x) => x?._id === supplierId
+      );
+      if (warehouseIdx > -1) {
+        warehouse = warehouseOptions[warehouseIdx]?._id || null;
+      }
+      if (supplierIdx > -1) {
+        supplier = supplierOptions[supplierIdx] || null;
+      }
+      setPoFormDetails({
+        poNumber: poNumber,
+        supplier: supplier,
+        poStatus: poStatus,
+        paymentStatus: paymentStatus,
+        warehouse: warehouse,
+        shipByDate: shipByDate,
+        note: note,
+      });
+      setLineItems(poItems);
+      setMode("edit");
+    } else {
+      setCreateMode();
+    }
+  }, [selectedPO]);
 
   useEffect(() => {
     getSupplierDetails();
@@ -420,16 +460,24 @@ const PurchaseOrders = () => {
               columnDefs={columnDefs}
               masterDetail={true}
               rowData={poList}
+              rowSelection="single"
               detailCellRendererParams={detailCellRendererParams}
+              onSelectionChanged={handleSelectionChange}
+              onGridReady={onMainGridReady}
             />
           </div>
         </Card>
         <Card
-          title="Create PO"
+          title={`${mode.toUpperCase()} PO`}
           className="w-4/12 h-full relative"
           extra={
-            <Button color="success" size="small" variant="contained">
-              Create PO
+            <Button
+              onClick={setCreateMode}
+              color="success"
+              size="small"
+              variant="contained"
+            >
+              Create
             </Button>
           }
         >
@@ -457,12 +505,11 @@ const PurchaseOrders = () => {
                     id="combo-box-demo"
                     size="small"
                     options={supplierOptions}
+                    value={poFormDetails?.supplier}
                     getOptionLabel={(option) => option?.supplierName}
                     sx={{ width: "100%" }}
                     name="supplier"
-                    // value={poFormDetails?.supplier}
                     onChange={(e, value) => {
-                      // console.log({ value }, "kkkk");
                       setPoFormDetails((prev) => ({
                         ...prev,
                         supplier: value,
@@ -492,7 +539,6 @@ const PurchaseOrders = () => {
                   <TextField
                     id="outlined-select-currency"
                     select
-                    // className="pb-4"
                     sx={{ width: "100%" }}
                     size="small"
                     label="Payment Status"
@@ -500,7 +546,6 @@ const PurchaseOrders = () => {
                     name="paymentStatus"
                     onChange={handleChange}
                     value={poFormDetails?.paymentStatus}
-                    // helperText="Please select your currency"
                   >
                     {paymentStatus.map((option) => (
                       <MenuItem key={option.value} value={option.value}>
@@ -523,12 +568,11 @@ const PurchaseOrders = () => {
                     size="small"
                     label="Ship To Warehouse"
                     onChange={handleChange}
-                    defaultValue="warehouse a"
                     name="warehouse"
                     value={poFormDetails?.warehouse}
                   >
                     {warehouseOptions.map((option) => (
-                      <MenuItem key={option._id} value={option}>
+                      <MenuItem key={option._id} value={option?._id}>
                         {option?.warehouseName}
                       </MenuItem>
                     ))}
@@ -582,8 +626,6 @@ const PurchaseOrders = () => {
                   <Autocomplete
                     fullWidth
                     size="small"
-                    // className="py-4"
-                    // value={selectedProduct}
                     options={productOptions}
                     value={selectedProduct}
                     onChange={(e, value) => {
@@ -634,7 +676,6 @@ const PurchaseOrders = () => {
                     id="outlined-number"
                     label="Quantity"
                     type="number"
-                    // className="py-4"
                     sx={{ width: "50%" }}
                     size="small"
                     value={quantity}
@@ -658,7 +699,6 @@ const PurchaseOrders = () => {
                     value={selectedProduct?.code || " "}
                   />
                   <TextField
-                    // fullWidth
                     sx={{ width: "50%" }}
                     id="outlined-basic"
                     label="Supplier Cost"
@@ -681,7 +721,6 @@ const PurchaseOrders = () => {
                   Add Item
                 </Button>
               </div>
-              <div></div>
               <div className="h-64 ag-theme-quartz p-1">
                 <AgGridReact
                   ref={addItemsGridApi}
