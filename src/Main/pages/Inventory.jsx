@@ -313,214 +313,220 @@ const Inventory = () => {
     setSelectedWarehouse(warehouses?.[0]?._id);
   }, [warehouses]);
   return (
-    <Card className="w-full h-[90%] relative">
-      <div
-        className="absolute flex gap-2 p-4"
-        style={{ top: 0, bottom: 0, left: 0, right: 0 }}
-      >
-        <Card
-          // size="small"
-          className="w-9/12 h-full relative"
-          title="Inventory Stock"
-          extra={
-            <div className="flex items-center gap-4">
-              <TextField
-                size="small"
-                label="Search"
-                onChange={handleSearch}
-                variant="outlined"
-                value={searchValue}
-              />
-              <Button
-                variant="contained"
-                onClick={getAllProductsWithStockDetails}
-              >
-                <RefreshIcon />
-              </Button>
-            </div>
-          }
+    <div>
+      <Card className="w-full h-[90%] relative">
+        <div
+          className="absolute flex gap-2 p-4"
+          style={{ top: 0, bottom: 0, left: 0, right: 0 }}
         >
-          <div
-            className="absolute ag-theme-quartz"
-            style={{ top: "57px", bottom: 0, left: 0, right: 0 }}
-          >
-            <AgGridReact
-              columnDefs={columnDefs}
-              rowData={productList}
-              defaultColDef={defaultColDef}
-              onGridReady={onGridReady}
-              masterDetail={true}
-              detailCellRendererParams={detailCellRendererParams}
-              // pagination={true}
-              // paginationPageSize={100}
-              // paginationPageSizeSelector={false}
-            />
-          </div>
-        </Card>
-        <Card className="w-3/12 h-full relative">
-          <div
-            className="absolute p-2 flex flex-col gap-4"
-            style={{ top: 0, bottom: 0, left: 0, right: 0 }}
-          >
-            <Card
-              className="h-full w-full relative"
-              size="small"
-              title="Inventory Add / Remove / Move"
-              bordered={false}
-            >
-              <div
-                className="absolute flex flex-col gap-4 p-2 m-4 overflow-y-auto"
-                style={{ top: "25px", bottom: 0, left: 0, right: 0 }}
-              >
+          <Card
+            // size="small"
+            className="w-9/12 h-full relative"
+            title="Inventory Stock"
+            extra={
+              <div className="flex items-center gap-4">
                 <TextField
-                  id="outlined-select-currency"
-                  select
-                  // className="pb-4"
-                  sx={{ width: "100%" }}
                   size="small"
-                  label="Action"
-                  defaultValue="add"
-                  // helperText="Please select your currency"
+                  label="Search"
+                  onChange={handleSearch}
+                  variant="outlined"
+                  value={searchValue}
+                />
+                <Button
+                  variant="contained"
+                  onClick={getAllProductsWithStockDetails}
                 >
-                  {actions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-                <Autocomplete
-                  sx={{ width: "100%" }}
-                  size="small"
-                  // className="py-4"
-                  // value={selectedProduct}
-                  options={productOptions}
-                  onChange={(e, value) => {
-                    console.log({ value }, "kkkk");
-                    setSelectedProduct(value);
-                  }}
-                  autoHighlight
-                  getOptionLabel={(option) => option?.sku}
-                  renderOption={(props, option) => (
-                    <div className="my-2">
-                      <div {...props} className="flex">
-                        <div className="min-w-20 max-w-20">
-                          <center>
-                            <ImageRenderer
-                              image={option?.primaryImageUrl}
-                              className="min-w-20 max-w-20"
-                              style={{ width: "100%" }}
-                            />
-                          </center>
-                        </div>
-                        <div className="ml-4">
-                          <b>Code :</b> {option?.code}
-                          <br />
-                          <b>SKU :</b> {option?.sku}
-                          <br />
-                          <b>Title :</b>{" "}
-                          {option?.title?.length > 15
-                            ? `${option?.title.substring(0, 13)}...`
-                            : option?.title}
+                  <RefreshIcon />
+                </Button>
+              </div>
+            }
+          >
+            <div
+              className="absolute ag-theme-quartz"
+              style={{ top: "57px", bottom: 0, left: 0, right: 0 }}
+            >
+              <AgGridReact
+                columnDefs={columnDefs}
+                rowData={productList}
+                defaultColDef={defaultColDef}
+                onGridReady={onGridReady}
+                masterDetail={true}
+                detailCellRendererParams={detailCellRendererParams}
+                // pagination={true}
+                // paginationPageSize={100}
+                // paginationPageSizeSelector={false}
+              />
+            </div>
+          </Card>
+          <Card className="w-3/12 h-full relative">
+            <div
+              className="absolute p-2 flex flex-col gap-4"
+              style={{ top: 0, bottom: 0, left: 0, right: 0 }}
+            >
+              <Card
+                className="h-full w-full relative"
+                size="small"
+                title="Inventory Add / Remove / Move"
+                bordered={false}
+              >
+                <div
+                  className="absolute flex flex-col gap-4 p-2 m-4 overflow-y-auto"
+                  style={{ top: "25px", bottom: 0, left: 0, right: 0 }}
+                >
+                  <TextField
+                    id="outlined-select-currency"
+                    select
+                    // className="pb-4"
+                    sx={{ width: "100%" }}
+                    size="small"
+                    label="Action"
+                    defaultValue="add"
+                    // helperText="Please select your currency"
+                  >
+                    {actions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <Autocomplete
+                    sx={{ width: "100%" }}
+                    size="small"
+                    // className="py-4"
+                    // value={selectedProduct}
+                    options={productOptions}
+                    onChange={(e, value) => {
+                      console.log({ value }, "kkkk");
+                      setSelectedProduct(value);
+                    }}
+                    autoHighlight
+                    getOptionLabel={(option) => option?.sku}
+                    renderOption={(props, option) => (
+                      <div className="my-2">
+                        <div {...props} className="flex">
+                          <div className="min-w-20 max-w-20">
+                            <center>
+                              <ImageRenderer
+                                image={option?.primaryImageUrl}
+                                className="min-w-20 max-w-20"
+                                style={{ width: "100%" }}
+                              />
+                            </center>
+                          </div>
+                          <div className="ml-4">
+                            <b>Code :</b> {option?.code}
+                            <br />
+                            <b>SKU :</b> {option?.sku}
+                            <br />
+                            <b>Title :</b>{" "}
+                            {option?.title?.length > 15
+                              ? `${option?.title.substring(0, 13)}...`
+                              : option?.title}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="SKU / Code"
-                      onChange={(e) => {
-                        getSkuAndCode(e.target.value);
-                      }}
-                      inputProps={{
-                        ...params.inputProps,
-                      }}
-                    />
-                  )}
-                />
-                <TextField
-                  id="outlined-number"
-                  label="Quantity"
-                  type="number"
-                  // className="py-4"
-                  sx={{ width: "100%" }}
-                  size="small"
-                  value={quantity}
-                  onChange={handleChange}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-
-                <TextField
-                  id="outlined-select-currency"
-                  select
-                  // className="my-4"
-                  sx={{ width: "100%" }}
-                  size="small"
-                  label="Select"
-                  onChange={handleWarehouseChange}
-                  defaultValue="65d9bdc91eaa28062d230c28"
-                >
-                  {warehouses.map((option) => (
-                    <MenuItem key={option._id} value={option._id}>
-                      {option.warehouseName}
-                    </MenuItem>
-                  ))}
-                </TextField>
-
-                <Autocomplete
-                  sx={{ width: "100%" }}
-                  size="small"
-                  // className="pt-4"
-                  options={locationOptions}
-                  onChange={(e, value) => {
-                    setSelectedLocation(value);
-                  }}
-                  autoHighlight
-                  getOptionLabel={(option) => option?.locationName}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Location"
-                      onChange={(e) => {
-                        getLocaionsBySearchValue(e.target.value);
-                      }}
-                      inputProps={{
-                        ...params.inputProps,
-                      }}
-                    />
-                  )}
-                />
-                <div className="flex items-center justify-end gap-2">
-                  <Button
+                    )}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="SKU / Code"
+                        onChange={(e) => {
+                          getSkuAndCode(e.target.value);
+                        }}
+                        inputProps={{
+                          ...params.inputProps,
+                        }}
+                      />
+                    )}
+                  />
+                  <TextField
+                    id="outlined-number"
+                    label="Quantity"
+                    type="number"
+                    // className="py-4"
+                    sx={{ width: "100%" }}
                     size="small"
-                    variant="contained"
-                    onClick={addRemoveMove}
+                    value={quantity}
+                    onChange={handleChange}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+
+                  <TextField
+                    id="outlined-select-currency"
+                    select
+                    // className="my-4"
+                    sx={{ width: "100%" }}
+                    size="small"
+                    label="Select"
+                    onChange={handleWarehouseChange}
+                    defaultValue="65d9bdc91eaa28062d230c28"
                   >
-                    Submit
-                  </Button>
-                  <Button size="small" variant="outlined" onClick={handleReset}>
-                    Reset
-                  </Button>
+                    {warehouses.map((option) => (
+                      <MenuItem key={option._id} value={option._id}>
+                        {option.warehouseName}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+
+                  <Autocomplete
+                    sx={{ width: "100%" }}
+                    size="small"
+                    // className="pt-4"
+                    options={locationOptions}
+                    onChange={(e, value) => {
+                      setSelectedLocation(value);
+                    }}
+                    autoHighlight
+                    getOptionLabel={(option) => option?.locationName}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Location"
+                        onChange={(e) => {
+                          getLocaionsBySearchValue(e.target.value);
+                        }}
+                        inputProps={{
+                          ...params.inputProps,
+                        }}
+                      />
+                    )}
+                  />
+                  <div className="flex items-center justify-end gap-2">
+                    <Button
+                      size="small"
+                      variant="contained"
+                      onClick={addRemoveMove}
+                    >
+                      Submit
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={handleReset}
+                    >
+                      Reset
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </Card>
-            <Card
-              className="h-full w-full relative"
-              size="small"
-              title="Inventory History"
-              bordered={false}
-            >
-              <div
-                className="absolute p-2"
-                style={{ top: "40px", bottom: 0, left: 0, right: 0 }}
-              ></div>
-            </Card>
-          </div>
-        </Card>
-      </div>
-    </Card>
+              </Card>
+              <Card
+                className="h-full w-full relative"
+                size="small"
+                title="Inventory History"
+                bordered={false}
+              >
+                <div
+                  className="absolute p-2"
+                  style={{ top: "40px", bottom: 0, left: 0, right: 0 }}
+                ></div>
+              </Card>
+            </div>
+          </Card>
+        </div>
+      </Card>
+    </div>
   );
 };
 

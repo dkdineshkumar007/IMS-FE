@@ -8,13 +8,14 @@ import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
 import Container from "@mui/material/Container";
 import Avatar from "@mui/material/Avatar";
-// import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const pages = [
     { page: "Dashboard", link: "/" },
     { page: "Orders", link: "/online-orders" },
@@ -23,10 +24,19 @@ const Navbar = () => {
     { page: "Products", link: "/product" },
   ];
 
-  const settings = ["Profile", "Logout"];
+  const settings = [
+    { page: "Profile", link: "/profile" },
+    { page: "Users", link: "/users" },
+    { page: "Logout", link: "/login" },
+  ];
 
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
+
+  const handleLogOut = (link) => {
+    console.log("Logout");
+    navigate(link);
+  };
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -39,8 +49,14 @@ const Navbar = () => {
     setAnchorElNav(null);
   };
 
-  const handleCloseUserMenu = () => {
+  const handleCloseUserMenu = (val) => {
+    const { page = "", link = "" } = val || {};
     setAnchorElUser(null);
+    if (page === "Logout") {
+      handleLogOut(link);
+    } else {
+      navigate(link);
+    }
   };
 
   return (
@@ -157,8 +173,11 @@ const Navbar = () => {
               onClose={handleCloseUserMenu}
             >
               {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography textAlign="center">{setting}</Typography>
+                <MenuItem
+                  key={setting}
+                  onClick={() => handleCloseUserMenu(setting)}
+                >
+                  <Typography textAlign="center">{setting.page}</Typography>
                 </MenuItem>
               ))}
             </Menu>
