@@ -486,6 +486,7 @@ const Products = () => {
           defaultColDef={defaultColDef}
           columnDefs={colDefs}
           onGridReady={onGridReady}
+          suppressCopyRowsToClipboard
           getRowId={getRowId}
           pagination={true}
           paginationPageSize={100}

@@ -118,7 +118,7 @@ const Users = () => {
       ...prev,
       open: true,
       mode: "Edit",
-      productId: id || "",
+      userId: id || "",
     }));
     prepareEdit(id);
   };
@@ -244,7 +244,7 @@ const Users = () => {
 
   const prepareEdit = (id) => {
     axios
-      .get(`${nodeAPIUrl}/product/get-user-by-id/${id}`)
+      .get(`${nodeAPIUrl}/user/get-user-by-id/${id}`)
       .then((response) => response.data)
       .then((result) => {
         if (result?.data) {
@@ -255,7 +255,7 @@ const Users = () => {
             phone = "",
             email = "",
             password = "",
-          } = result?.data[0] || {};
+          } = result?.data || {};
 
           setUser({
             firstName: firstName,
@@ -527,7 +527,7 @@ const Users = () => {
                   size="small"
                   required
                   margin="dense"
-                  name="price"
+                  name="password"
                   value={user?.password}
                   label="Password"
                   type="password"

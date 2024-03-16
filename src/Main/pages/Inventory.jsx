@@ -33,6 +33,7 @@ const Inventory = () => {
     sortable: true,
     filter: false,
     selectable: false,
+    // flex: 1,
   });
 
   const warehouses = useMemo(

@@ -20,6 +20,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import { Card, Tooltip } from "antd";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { ToastContainer, toast } from "react-toastify";
+import moment from "moment";
 
 const nodeAPIUrl = `http://localhost:5000/api/v1`;
 let cancelToken;
@@ -102,6 +103,10 @@ const PurchaseOrders = () => {
       {
         field: "shipByDate",
         width: 100,
+        cellRenderer: ({ value }) => {
+          const date2 = moment(value).format("MM/DD/YYYY");
+          return date2 ? date2 : value ? value : "";
+        },
       },
       {
         field: "warehouseName",
@@ -487,6 +492,9 @@ const PurchaseOrders = () => {
               masterDetail={true}
               rowData={poList}
               rowSelection="single"
+              defaultColDef={{
+                flex: 1,
+              }}
               // getRowId={getMainGridRowId}
               detailCellRendererParams={detailCellRendererParams}
               onSelectionChanged={handleSelectionChange}
