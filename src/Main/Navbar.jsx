@@ -179,6 +179,10 @@ const Navbar = () => {
                 >
                   <Typography textAlign="center">{setting.page}</Typography>
                 </MenuItem>
+
+                //
+                ///
+                ///
               ))}
             </Menu>
           </Box>
