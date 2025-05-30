@@ -22,7 +22,8 @@ const Navbar = () => {
     { page: "Inventory", link: "/inventory" },
     { page: "PO", link: "/purchase-orders" },
     { page: "Products", link: "/product" },
-    {page: "das&co" ,link : "/velu"}
+    {page: "das&co" ,link : "/velu"},
+     {page: "lithi" ,link : "/mee"},
   ];
 
   const settings = [
