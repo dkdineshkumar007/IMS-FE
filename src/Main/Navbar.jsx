@@ -22,6 +22,7 @@ const Navbar = () => {
     { page: "Inventory", link: "/inventory" },
     { page: "PO", link: "/purchase-orders" },
     { page: "Products", link: "/product" },
+    {page: "Home", link: "/home"}
   ];
 
   const settings = [

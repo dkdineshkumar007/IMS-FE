@@ -8,6 +8,7 @@ import Orders from "./Main/pages/Orders";
 import Profile from "./Main/pages/settings/Profile";
 import Users from "./Main/pages/settings/Users";
 import Login from "./Main/pages/settings/Login";
+import SampleHome from "./Main/pages/SampleHome";
 
 function App() {
   const location = useLocation();
@@ -26,6 +27,7 @@ function App() {
         <Route path="/users" element={<Users />} />
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/home" element={<SampleHome />} />
       </Routes>
     </div>
   );
