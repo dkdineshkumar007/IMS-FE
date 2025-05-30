@@ -8,6 +8,7 @@ import Orders from "./Main/pages/Orders";
 import Profile from "./Main/pages/settings/Profile";
 import Users from "./Main/pages/settings/Users";
 import Login from "./Main/pages/settings/Login";
+import Kavya from "./Main/pages/Kavya";
 
 function App() {
   const location = useLocation();
@@ -20,6 +21,7 @@ function App() {
         <Route path="/" element={<Homepage />} />
         <Route path="/homepage" element={<Homepage />} />
         <Route path="/product" element={<Products />} />
+        <Route path="/kavya" element={<Kavya />} />
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/purchase-orders" element={<Po />} />
         <Route path="/online-orders" element={<Orders />} />
