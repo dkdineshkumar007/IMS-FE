@@ -22,7 +22,8 @@ const Navbar = () => {
     { page: "Inventory", link: "/inventory" },
     { page: "PO", link: "/purchase-orders" },
     { page: "Products", link: "/product" },
-    {page: "das&co" ,link : "/velu"}
+    { page: "das&co", link: "/velu" },
+    { page: "User", link: "/User" },
   ];
 
   const settings = [
@@ -180,6 +181,10 @@ const Navbar = () => {
                 >
                   <Typography textAlign="center">{setting.page}</Typography>
                 </MenuItem>
+
+                //
+                ///
+                ///
               ))}
             </Menu>
           </Box>

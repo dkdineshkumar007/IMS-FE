@@ -9,6 +9,7 @@ import Profile from "./Main/pages/settings/Profile";
 import Users from "./Main/pages/settings/Users";
 import Login from "./Main/pages/settings/Login";
 import Velu from "./Main/pages/velu";
+import User from "./Main/pages/User";
 
 function App() {
   const location = useLocation();
@@ -28,6 +29,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/velu" element={<Velu />} />
+        <Route path="/user" element={<User />} />
       </Routes>
     </div>
   );
