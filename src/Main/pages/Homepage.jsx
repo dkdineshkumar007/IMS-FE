@@ -12,6 +12,8 @@ import moment from "moment";
 const nodeAPIUrl = `http://localhost:5000/api/v1`;
 //added a comment for demo
 
+//additional changes
+
 export default function Homepage() {
   const [productList, setProductList] = useState([]);
   console.log("2024-03-15 11:30:00+00:00");
